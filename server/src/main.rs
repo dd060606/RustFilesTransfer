@@ -1,3 +1,5 @@
+mod commands;
+
 use std::collections::HashSet;
 use std::time::Duration;
 use rustyline::completion::{extract_word, Completer, FilenameCompleter, Pair};
