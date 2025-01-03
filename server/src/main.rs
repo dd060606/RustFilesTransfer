@@ -1,8 +1,11 @@
+use std::sync::Arc;
+
 use colored::Colorize;
 use rustyline::{CompletionType, Config, EditMode, Editor, ExternalPrinter};
 use rustyline::completion::FilenameCompleter;
 use rustyline::error::ReadlineError;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::sync::Mutex;
 use tokio::task;
 
 use crate::commands::{CommandHelper, CommandRegistry};
@@ -29,12 +32,14 @@ async fn main() {
     };
     let mut rl = Editor::with_config(config).expect("Failed to create editor");
     rl.set_helper(Some(cmd_helper));
-    let mut printer = rl.create_external_printer().expect("Failed to create external printer");
 
-
+    // Get port from cli arguments (default is 8505)
+    let port = std::env::args().nth(1).unwrap_or("8505".to_string());
+    // Create an external printer
+    let printer = Arc::new(Mutex::new(rl.create_external_printer().expect("Failed to create external printer")));
     // Start the TCP server
     task::spawn(async move {
-        Server::new().run().await.unwrap();
+        Server::new(printer, port).run().await.unwrap();
     });
 
     // Command loop
@@ -65,3 +70,4 @@ async fn main() {
         }
     }
 }
+

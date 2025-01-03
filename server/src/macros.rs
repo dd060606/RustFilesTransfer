@@ -23,7 +23,7 @@ macro_rules! ext_success {
     };
 }
 #[macro_export]
-macro_rules! ext {
+macro_rules! ext_error {
     ($printer:expr, $($arg:tt)*) => {
         $printer.print(format!("[{}] {}", "-".red(), format!($($arg)*)).to_string()).unwrap();
     };
