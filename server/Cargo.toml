@@ -9,3 +9,4 @@ common = { path = "../common" }
 rustyline = "15.0.0"
 rustyline-derive = "0.11.0"
 colored = "2.2.0"
+async-trait = "0.1.84"

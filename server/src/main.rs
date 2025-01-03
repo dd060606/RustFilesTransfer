@@ -9,17 +9,23 @@ use tokio::sync::Mutex;
 use tokio::task;
 
 use crate::commands::{CommandHelper, CommandRegistry};
+use crate::connections::Connections;
 use crate::server::Server;
 
 mod commands;
 mod macros;
 mod server;
+mod connections;
 
 
 #[tokio::main]
 async fn main() {
+    // Create a new instance of the connections struct
+    let connections = Arc::new(Mutex::new(Connections::new()));
+    let connections_clone = Arc::clone(&connections);
+
     // Initialize the command registry
-    let cmd_registry = CommandRegistry::new();
+    let cmd_registry = CommandRegistry::new(connections_clone);
     // Create a new instance of the default editor
     let config = Config::builder()
         .history_ignore_space(true)
@@ -37,9 +43,10 @@ async fn main() {
     let port = std::env::args().nth(1).unwrap_or("8505".to_string());
     // Create an external printer
     let printer = Arc::new(Mutex::new(rl.create_external_printer().expect("Failed to create external printer")));
+
     // Start the TCP server
     task::spawn(async move {
-        Server::new(printer, port).run().await.unwrap();
+        Server::new(port, connections, printer).run().await.unwrap();
     });
 
     // Command loop
@@ -49,7 +56,7 @@ async fn main() {
             Ok(line) => {
                 let _ = rl.add_history_entry(line.as_str());
                 // Execute the command
-                match cmd_registry.execute(line) {
+                match cmd_registry.execute(line).await {
                     // Command not found error
                     Err(e) => eprintln!("{}", e),
                     _ => {}

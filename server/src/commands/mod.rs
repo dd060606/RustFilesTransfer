@@ -1,32 +1,42 @@
+use std::sync::Arc;
+
+use async_trait::async_trait;
 use colored::Colorize;
 use rustyline::completion::{Completer, extract_word, FilenameCompleter, Pair};
 use rustyline::Context;
 use rustyline::error::ReadlineError;
 use rustyline_derive::{Helper, Highlighter, Hinter, Validator};
+use tokio::sync::Mutex;
+
+use crate::connections::Connections;
 
 mod help;
+mod list;
 
 const DEFAULT_BREAK_CHARS: [char; 3] = [' ', '\t', '\n'];
 
-
-pub trait Command {
+#[async_trait]
+pub trait Command: Send + Sync {
     fn name(&self) -> &str;
     fn description(&self) -> String;
     fn aliases(&self) -> Vec<&str>;
-    fn execute(&self, registry: &CommandRegistry, args: Vec<String>);
+    async fn execute(&self, registry: &CommandRegistry, args: Vec<String>);
 }
 
 pub struct CommandRegistry {
     pub(crate) commands: Vec<Box<dyn Command>>,
+    connections: Arc<Mutex<Connections>>,
 }
 
 impl CommandRegistry {
-    pub fn new() -> Self {
+    pub fn new(connections: Arc<Mutex<Connections>>) -> Self {
         let mut registry = Self {
             commands: Vec::new(),
+            connections,
         };
         // Register commands here
         registry.register(Box::new(help::HelpCommand));
+        registry.register(Box::new(list::ListCommand));
 
         registry
     }
@@ -38,7 +48,7 @@ impl CommandRegistry {
 
 
     // Execute a command
-    pub fn execute(&self, command: String) -> Result<(), String> {
+    pub async fn execute(&self, command: String) -> Result<(), String> {
         match self.get_cmd(&command) {
             // Command not found
             None => Err(format!(
@@ -46,7 +56,7 @@ impl CommandRegistry {
                 command.split_whitespace().next().unwrap_or("")
             )),
             // Execute the command
-            Some(cmd) => Ok(cmd.execute(self, self.parse_args(&command))),
+            Some(cmd) => Ok(cmd.execute(self, self.parse_args(&command)).await),
         }
     }
 

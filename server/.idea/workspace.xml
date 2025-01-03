@@ -7,9 +7,17 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ea3f9c77-e91c-4c07-a8d0-c9bc473402b2" name="Changes" comment="">
+    <list default="true" id="ea3f9c77-e91c-4c07-a8d0-c9bc473402b2" name="Changes" comment="work on tcp server">
+      <change afterPath="$PROJECT_DIR$/src/commands/list.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/connections.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/.idea/client.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../client/.idea/client.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../client/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../client/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/main.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/macros.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/macros.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/commands/help.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/help.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/commands/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/mod.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/server.rs" afterDir="false" />
     </list>
@@ -95,11 +103,36 @@
       <workItem from="1735652768701" duration="5248000" />
       <workItem from="1735817103122" duration="2075000" />
       <workItem from="1735833565234" duration="6809000" />
-      <workItem from="1735902113479" duration="3281000" />
+      <workItem from="1735902113479" duration="3507000" />
+      <workItem from="1735911587348" duration="4512000" />
     </task>
+    <task id="LOCAL-00001" summary="work on tcp server">
+      <option name="closed" value="true" />
+      <created>1735905761055</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1735905761055</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="work on tcp server" />
+    <option name="LAST_COMMIT_MESSAGE" value="work on tcp server" />
   </component>
 </project>
