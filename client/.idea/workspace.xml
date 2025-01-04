@@ -8,7 +8,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b66d26d6-22ac-4085-9548-b118c5e4b5cf" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../common/src/messages/ping.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../server/src/commands/ping.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../common/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../common/src/lib.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../common/src/messages/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../common/src/messages/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../server/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/commands/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/commands/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/connections.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/connections.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,6 +94,7 @@
       <workItem from="1735913879377" duration="1997000" />
       <workItem from="1735990523173" duration="51000" />
       <workItem from="1735996004179" duration="4000" />
+      <workItem from="1736012160384" duration="456000" />
     </task>
     <servers />
   </component>

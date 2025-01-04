@@ -1,6 +1,8 @@
 use std::env;
 use std::time::Duration;
 
+use common::messages::{BasePacket, Message};
+use common::messages::ping::PingMessage;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::time::sleep;
@@ -30,10 +32,16 @@ async fn run_tcp_client(addr: String) {
                         // End of stream
                         println!("Connection closed by server.");
                     } else {
-                        println!("Received: {:?}", &buffer[..n]);
-
+                        let decoded_msg = BasePacket::from_bytes(&buffer[..n]);
+                        let BasePacket::Ping(msg) = decoded_msg;
+                        println!("Received message: {}", msg.message);
+                        // Create a new ping message
+                        let pong_message = PingMessage {
+                            message: msg.message,
+                        };
+                        let pong_packet = BasePacket::Ping(pong_message);
                         // Example of writing to the stream
-                        if let Err(e) = stream.write_all(b"Hello, server!").await {
+                        if let Err(e) = stream.write_all(&*pong_packet.to_bytes()).await {
                             eprintln!("Write failed: {}", e);
                         }
                     }
