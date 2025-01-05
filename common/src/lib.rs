@@ -15,10 +15,9 @@ mod tests {
         let ping_packet = Packet::Ping(ping_msg);
         let encoded = ping_packet.to_bytes();
         let decoded_msg = Packet::from_bytes(&encoded);
-        //if let BasePacket::Ping(msg) = decoded_msg {
-        //    println!("Message: {}", msg.message);
-        //
-        let Packet::Ping(msg) = decoded_msg;
-        assert_eq!(msg.message, "Hello, world!");
+        if let Packet::Ping(msg) = decoded_msg {
+            println!("Message: {}", msg.message);
+            assert_eq!(msg.message, "Hello, world!");
+        }
     }
 }

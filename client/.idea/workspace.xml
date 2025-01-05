@@ -8,18 +8,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b66d26d6-22ac-4085-9548-b118c5e4b5cf" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/client.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../server/src/commands/select.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../common/src/messages/list_files.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../server/src/commands/list_files.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/client.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../common/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../common/src/lib.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../common/src/messages/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../common/src/messages/mod.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../server/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../server/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../server/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/commands/list.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/commands/list.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../server/src/commands/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/commands/mod.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../server/src/commands/ping.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/commands/ping.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../server/src/connections.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/connections.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../server/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/src/server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/server.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -105,6 +106,7 @@
       <workItem from="1735996004179" duration="4000" />
       <workItem from="1736012160384" duration="456000" />
       <workItem from="1736069735561" duration="4347000" />
+      <workItem from="1736083114071" duration="3387000" />
     </task>
     <servers />
   </component>

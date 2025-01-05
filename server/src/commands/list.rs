@@ -19,7 +19,7 @@ impl Command for ListCommand {
         vec![]
     }
 
-    async fn execute(&self, registry: &CommandRegistry, args: Vec<String>) {
+    async fn execute(&self, registry: &CommandRegistry, _args: Vec<String>) {
         println!("{}", "ID       IP".cyan());
         println!("{}", "--       --".cyan());
         //Print each connections

@@ -8,18 +8,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ea3f9c77-e91c-4c07-a8d0-c9bc473402b2" name="Changes" comment="work on tcp packets + add select command to switch between clients">
-      <change afterPath="$PROJECT_DIR$/../client/src/client.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/commands/select.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../common/src/messages/list_files.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/list_files.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../client/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../client/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../client/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/client.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/client.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../common/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../common/src/lib.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../common/src/messages/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../common/src/messages/mod.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/commands/list.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/list.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/commands/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/mod.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/commands/ping.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/ping.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/connections.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/connections.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/server.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,6 +108,7 @@
       <workItem from="1735911587348" duration="4512000" />
       <workItem from="1736008700256" duration="3552000" />
       <workItem from="1736069772987" duration="4576000" />
+      <workItem from="1736081098280" duration="6568000" />
     </task>
     <task id="LOCAL-00001" summary="work on tcp server">
       <option name="closed" value="true" />

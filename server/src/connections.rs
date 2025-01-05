@@ -39,15 +39,7 @@ impl Connections {
     pub fn set_current_client(&mut self, id: u16) {
         self.current_client = id;
     }
-
-    pub fn get_stream(&mut self) -> Option<&mut TcpStream> {
-        if let Some(stream) = self.get_connection(self.current_client) {
-            Some(stream)
-        } else {
-            None
-        }
-    }
-
+    
     //Send a message to the selected client
     pub async fn send_message(&mut self, message: &Packet) -> Result<Packet, String> {
         if let Some(stream) = self.get_connection(self.current_client) {

@@ -1,10 +1,9 @@
 use std::sync::Arc;
 
 use colored::Colorize;
-use rustyline::{CompletionType, Config, EditMode, Editor, ExternalPrinter};
+use rustyline::{CompletionType, Config, EditMode, Editor};
 use rustyline::completion::FilenameCompleter;
 use rustyline::error::ReadlineError;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::sync::Mutex;
 use tokio::task;
 
@@ -35,6 +34,7 @@ async fn main() {
     let cmd_helper = CommandHelper {
         file_completer: FilenameCompleter::new(),
         commands: cmd_registry.get_commands(),
+        connections: connections.clone(),
     };
     let mut rl = Editor::with_config(config).expect("Failed to create editor");
     rl.set_helper(Some(cmd_helper));
@@ -58,7 +58,9 @@ async fn main() {
                 // Execute the command
                 match cmd_registry.execute(line).await {
                     // Command not found error
-                    Err(e) => error!("{}", e),
+                    Err(e) => {
+                        error!("{}", e);
+                    }
                     _ => {}
                 }
             }

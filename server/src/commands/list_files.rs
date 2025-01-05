@@ -1,43 +1,43 @@
 use async_trait::async_trait;
 use colored::Colorize;
+use common::messages::list_files::ListFilesMessage;
 use common::messages::Packet;
-use common::messages::ping::PingMessage;
 
 use crate::error;
 
 use super::{Command, CommandRegistry};
 
-pub struct PingCommand;
+pub struct ListFilesCommand;
 
 #[async_trait]
-impl Command for PingCommand {
+impl Command for ListFilesCommand {
     fn name(&self) -> &str {
-        "ping"
+        "ls"
     }
 
     fn description(&self) -> String {
-        format!("{} {}", self.name(), "- Sends a ping message to the server")
+        format!("{} {} {}", self.name(), "(<path>)", "- Lists files in the current directory")
     }
 
     fn aliases(&self) -> Vec<&str> {
-        vec![]
+        vec!["dir"]
     }
 
     async fn execute(&self, registry: &CommandRegistry, args: Vec<String>) {
         // Create a new ping message
-        let message = PingMessage {
-            message: args.join(" "),
+        let message = ListFilesMessage {
+            path: args.join(" "),
         };
         // Create a new packet with the ping message
-        let packet = Packet::Ping(message);
+        let packet = Packet::ListFiles(message);
 
         let mut connections = registry.connections.lock().await;
 
         // Send the packet to the client
         match connections.send_message(&packet).await {
             Ok(res) => {
-                if let Packet::Ping(msg) = res {
-                    println!("Response: {}", msg.message);
+                if let Packet::ListFilesResponse(response) = res {
+                    println!("Response: {}", response.files.join("\n"));
                 }
             }
             Err(e) => {

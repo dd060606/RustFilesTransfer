@@ -1,9 +1,14 @@
+use crate::messages::list_files::{ListFilesMessage, ListFilesResponse};
 use crate::messages::ping::{PingMessage};
 
 pub mod ping;
+pub mod list_files;
+
 // Available messages for the server and client to communicate with each other.
 pub enum Packet {
     Ping(PingMessage),
+    ListFiles(ListFilesMessage),
+    ListFilesResponse(ListFilesResponse),
 }
 
 pub trait Message {
@@ -21,9 +26,17 @@ impl Message for Packet {
         let mut bytes = Vec::new();
 
         match self {
-            Packet::Ping(msg) => {
+            Packet::Ping(packet) => {
                 bytes.push(1); // Type identifier
-                bytes.extend_from_slice(&msg.to_bytes());
+                bytes.extend_from_slice(&packet.to_bytes());
+            }
+            Packet::ListFiles(packet) => {
+                bytes.push(2); // Type identifier
+                bytes.extend_from_slice(&packet.to_bytes());
+            }
+            Packet::ListFilesResponse(packet) => {
+                bytes.push(3); // Type identifier
+                bytes.extend_from_slice(&packet.to_bytes());
             }
         }
 
@@ -35,6 +48,8 @@ impl Message for Packet {
         let msg_type = bytes[0]; // Read the type identifier
         match msg_type {
             1 => Packet::Ping(PingMessage::from_bytes(&bytes[1..])),
+            2 => Packet::ListFiles(ListFilesMessage::from_bytes(&bytes[1..])),
+            3 => Packet::ListFilesResponse(ListFilesResponse::from_bytes(&bytes[1..])),
             _ => panic!("Unknown message type"),
         }
     }
