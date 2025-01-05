@@ -58,7 +58,7 @@ async fn main() {
                 // Execute the command
                 match cmd_registry.execute(line).await {
                     // Command not found error
-                    Err(e) => eprintln!("{}", e),
+                    Err(e) => error!("{}", e),
                     _ => {}
                 }
             }

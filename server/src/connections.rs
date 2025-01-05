@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use common::messages::{BasePacket, Message};
+use common::messages::{Message, Packet};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
@@ -35,8 +35,8 @@ impl Connections {
     pub fn exists(&self, id: u16) -> bool {
         self.clients.contains_key(&id)
     }
-    //Change current connection ID
-    pub fn set_current_connection(&mut self, id: u16) {
+    //Change current client ID
+    pub fn set_current_client(&mut self, id: u16) {
         self.current_client = id;
     }
 
@@ -49,7 +49,7 @@ impl Connections {
     }
 
     //Send a message to the selected client
-    pub async fn send_message(&mut self, message: &BasePacket) -> Result<BasePacket, String> {
+    pub async fn send_message(&mut self, message: &Packet) -> Result<Packet, String> {
         if let Some(stream) = self.get_connection(self.current_client) {
             // Send the message
             match stream.write_all(&*message.to_bytes()).await {
@@ -64,11 +64,11 @@ impl Connections {
             match stream.read(&mut buffer).await {
                 Ok(size) => {
                     if size == 0 {
-                        self.remove_connection(1);
+                        self.remove_connection(self.current_client);
                         Err(String::from("Error while receiving the message!"))
                     } else {
                         // Return the response
-                        Ok(BasePacket::from_bytes(&buffer[..size]))
+                        Ok(Packet::from_bytes(&buffer[..size]))
                     }
                 }
                 Err(e) => Err(format!("Failed to read from server: {}", e)),

@@ -1,6 +1,9 @@
 use async_trait::async_trait;
-use common::messages::BasePacket;
+use colored::Colorize;
+use common::messages::Packet;
 use common::messages::ping::PingMessage;
+
+use crate::error;
 
 use super::{Command, CommandRegistry};
 
@@ -26,17 +29,19 @@ impl Command for PingCommand {
             message: args.join(" "),
         };
         // Create a new packet with the ping message
-        let packet = BasePacket::Ping(message);
+        let packet = Packet::Ping(message);
 
         let mut connections = registry.connections.lock().await;
 
         // Send the packet to the client
         match connections.send_message(&packet).await {
             Ok(res) => {
-                let BasePacket::Ping(msg) = res;
+                let Packet::Ping(msg) = res;
                 println!("Response: {}", msg.message);
             }
-            Err(_) => {}
+            Err(e) => {
+                error!("Failed to send message: {}", e);
+            }
         };
     }
 }

@@ -43,6 +43,7 @@ impl<P: ExternalPrinter + Send + Sync + 'static> Server<P> {
             // Add the connection to the list
             let mut connections = self.connections.lock().await;
             connections.add_connection(next_id, socket);
+            // Increment the next ID for the next connection
             next_id += 1;
         }
     }

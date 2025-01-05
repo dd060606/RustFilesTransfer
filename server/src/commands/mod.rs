@@ -13,6 +13,7 @@ use crate::connections::Connections;
 mod help;
 mod list;
 mod ping;
+mod select;
 
 const DEFAULT_BREAK_CHARS: [char; 3] = [' ', '\t', '\n'];
 
@@ -39,6 +40,7 @@ impl CommandRegistry {
         registry.register(Box::new(help::HelpCommand));
         registry.register(Box::new(list::ListCommand));
         registry.register(Box::new(ping::PingCommand));
+        registry.register(Box::new(select::SelectCommand));
 
         registry
     }

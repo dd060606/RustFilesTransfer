@@ -2,7 +2,7 @@ use crate::messages::ping::{PingMessage};
 
 pub mod ping;
 // Available messages for the server and client to communicate with each other.
-pub enum BasePacket {
+pub enum Packet {
     Ping(PingMessage),
 }
 
@@ -15,13 +15,13 @@ pub trait Message {
         Self: Sized;
 }
 
-impl Message for BasePacket {
+impl Message for Packet {
     // Converts the message into a byte array for sending over TCP.
     fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
 
         match self {
-            BasePacket::Ping(msg) => {
+            Packet::Ping(msg) => {
                 bytes.push(1); // Type identifier
                 bytes.extend_from_slice(&msg.to_bytes());
             }
@@ -34,7 +34,7 @@ impl Message for BasePacket {
     fn from_bytes(bytes: &[u8]) -> Self {
         let msg_type = bytes[0]; // Read the type identifier
         match msg_type {
-            1 => BasePacket::Ping(PingMessage::from_bytes(&bytes[1..])),
+            1 => Packet::Ping(PingMessage::from_bytes(&bytes[1..])),
             _ => panic!("Unknown message type"),
         }
     }
