@@ -1,14 +1,17 @@
 use crate::messages::list_files::{ListFilesMessage, ListFilesResponse};
-use crate::messages::ping::{PingMessage};
+use crate::messages::ping::PingMessage;
+use crate::messages::response::ErrorResponse;
 
-pub mod ping;
 pub mod list_files;
+pub mod ping;
+pub mod response;
 
 // Available messages for the server and client to communicate with each other.
 pub enum Packet {
     Ping(PingMessage),
     ListFiles(ListFilesMessage),
     ListFilesResponse(ListFilesResponse),
+    ErrorResponse(ErrorResponse),
 }
 
 pub trait Message {
@@ -38,6 +41,10 @@ impl Message for Packet {
                 bytes.push(3); // Type identifier
                 bytes.extend_from_slice(&packet.to_bytes());
             }
+            Packet::ErrorResponse(packet) => {
+                bytes.push(4); // Type identifier
+                bytes.extend_from_slice(&packet.to_bytes());
+            }
         }
 
         bytes
@@ -50,7 +57,14 @@ impl Message for Packet {
             1 => Packet::Ping(PingMessage::from_bytes(&bytes[1..])),
             2 => Packet::ListFiles(ListFilesMessage::from_bytes(&bytes[1..])),
             3 => Packet::ListFilesResponse(ListFilesResponse::from_bytes(&bytes[1..])),
-            _ => panic!("Unknown message type"),
+            4 => Packet::ErrorResponse(ErrorResponse::from_bytes(&bytes[1..])),
+            _ => {
+                //If the packet is invalid, return a ErrorResponse packet
+                let error = ErrorResponse {
+                    error: "Error while decoding packet".to_string(),
+                };
+                Packet::ErrorResponse(error)
+            }
         }
     }
 }

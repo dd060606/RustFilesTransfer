@@ -3,7 +3,7 @@ use colored::Colorize;
 use common::messages::list_files::ListFilesMessage;
 use common::messages::Packet;
 
-use crate::error;
+use crate::{error, success};
 
 use super::{Command, CommandRegistry};
 
@@ -16,7 +16,12 @@ impl Command for ListFilesCommand {
     }
 
     fn description(&self) -> String {
-        format!("{} {} {}", self.name(), "(<path>)", "- Lists files in the current directory")
+        format!(
+            "{} {} {}",
+            self.name(),
+            "(<path>)",
+            "- Lists files in the current directory"
+        )
     }
 
     fn aliases(&self) -> Vec<&str> {
@@ -35,11 +40,16 @@ impl Command for ListFilesCommand {
 
         // Send the packet to the client
         match connections.send_message(&packet).await {
-            Ok(res) => {
-                if let Packet::ListFilesResponse(response) = res {
-                    println!("Response: {}", response.files.join("\n"));
+            Ok(res) => match res {
+                Packet::ListFilesResponse(response) => {
+                    success!("Files:");
+                    println!("{}", response.files.join("\n"));
                 }
-            }
+                Packet::ErrorResponse(response) => {
+                    error!("Error: {}", response.error);
+                }
+                _ => {}
+            },
             Err(e) => {
                 error!("Failed to send message: {}", e);
             }

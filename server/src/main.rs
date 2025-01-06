@@ -1,21 +1,21 @@
 use std::sync::Arc;
 
 use colored::Colorize;
-use rustyline::{CompletionType, Config, EditMode, Editor};
 use rustyline::completion::FilenameCompleter;
 use rustyline::error::ReadlineError;
+use rustyline::{CompletionType, Config, EditMode, Editor};
 use tokio::sync::Mutex;
 use tokio::task;
 
-use crate::commands::{CommandHelper, CommandRegistry};
+use crate::commands::completer::CommandHelper;
+use crate::commands::CommandRegistry;
 use crate::connections::Connections;
 use crate::server::Server;
 
 mod commands;
+mod connections;
 mod macros;
 mod server;
-mod connections;
-
 
 #[tokio::main]
 async fn main() {
@@ -42,7 +42,10 @@ async fn main() {
     // Get port from cli arguments (default is 8505)
     let port = std::env::args().nth(1).unwrap_or("8505".to_string());
     // Create an external printer
-    let printer = Arc::new(Mutex::new(rl.create_external_printer().expect("Failed to create external printer")));
+    let printer = Arc::new(Mutex::new(
+        rl.create_external_printer()
+            .expect("Failed to create external printer"),
+    ));
 
     // Start the TCP server
     task::spawn(async move {
@@ -79,4 +82,3 @@ async fn main() {
         }
     }
 }
-
