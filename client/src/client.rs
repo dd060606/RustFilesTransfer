@@ -1,12 +1,12 @@
 use std::env;
 use std::error::Error;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
+use common::messages::{Message, Packet};
 use common::messages::list_files::ListFilesResponse;
 use common::messages::ping::PingMessage;
 use common::messages::response::ErrorResponse;
-use common::messages::{Message, Packet};
 use tokio::fs::read_dir;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
@@ -71,7 +71,13 @@ pub async fn handle_message(
                 // If no path is provided, use the current directory
                 env::current_dir().unwrap_or_default()
             } else {
-                PathBuf::from(&msg.path)
+                let pathbuf = PathBuf::from(&msg.path);
+                // If the path does not exist return parent directory
+                if !pathbuf.exists() {
+                    pathbuf.parent().unwrap_or(Path::new("/")).to_path_buf()
+                } else {
+                    pathbuf
+                }
             };
             // Handle the result of reading the directory
             match read_dir(path).await {
@@ -80,8 +86,13 @@ pub async fn handle_message(
                     // Iterate over the entries in the directory
                     while let Some(entry) = entries.next_entry().await? {
                         let entry_path = entry.path();
+                        // Skip files if only directories are requested
+                        if msg.only_directories && entry_path.is_file() {
+                            continue;
+                        }
                         files.push(entry_path.to_string_lossy().to_string());
                     }
+                    println!("Sending list of files to server... {:?}", files);
                     // Send the list of files back to the server
                     let response = ListFilesResponse { files };
                     let response_packet = Packet::ListFilesResponse(response);

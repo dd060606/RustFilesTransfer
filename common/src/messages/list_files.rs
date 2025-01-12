@@ -1,25 +1,33 @@
-use crate::messages::{Message};
+use crate::messages::Message;
 
 pub struct ListFilesMessage {
-    pub path: String
+    pub path: String,
+    pub only_directories: bool,
 }
+
 impl Message for ListFilesMessage {
     fn to_bytes(&self) -> Vec<u8> {
-        // Convert the message to a byte array
-        self.path.as_bytes().to_vec()
+        let mut bytes = Vec::new();
+        bytes.push(self.only_directories as u8);
+        // Convert the path to a byte array
+        bytes.extend_from_slice(self.path.as_bytes());
+        bytes
     }
     fn from_bytes(data: &[u8]) -> Self where Self: Sized {
         // Convert the byte array to a message
-        let path = String::from_utf8(data.to_vec()).unwrap();
+        let only_directories = data[0] != 0;
+        let path = String::from_utf8(data[1..].to_vec()).unwrap();
         Self {
-            path
+            path,
+            only_directories,
         }
     }
 }
 
 pub struct ListFilesResponse {
-    pub files: Vec<String>
+    pub files: Vec<String>,
 }
+
 impl Message for ListFilesResponse {
     fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();

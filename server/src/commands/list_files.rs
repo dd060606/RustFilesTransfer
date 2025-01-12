@@ -29,11 +29,12 @@ impl Command for ListFilesCommand {
     }
 
     async fn execute(&self, registry: &CommandRegistry, args: Vec<String>) {
-        // Create a new ping message
+        // Create a new message
         let message = ListFilesMessage {
             path: args.join(" "),
+            only_directories: false,
         };
-        // Create a new packet with the ping message
+        // Create a new packet with the message
         let packet = Packet::ListFiles(message);
 
         let mut connections = registry.connections.lock().await;
