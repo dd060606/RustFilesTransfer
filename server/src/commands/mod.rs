@@ -5,6 +5,7 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 
 pub mod completer;
+mod copy;
 mod help;
 mod list;
 mod list_files;
@@ -36,6 +37,7 @@ impl CommandRegistry {
         registry.register(Box::new(ping::PingCommand));
         registry.register(Box::new(select::SelectCommand));
         registry.register(Box::new(list_files::ListFilesCommand));
+        registry.register(Box::new(copy::CopyCommand));
 
         registry
     }

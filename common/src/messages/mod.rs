@@ -1,8 +1,11 @@
+use crate::messages::copy::CopyFileMessage;
 use crate::messages::info::{InfoMessage, InfoResponse};
 use crate::messages::list_files::{ListFilesMessage, ListFilesResponse};
 use crate::messages::ping::PingMessage;
 use crate::messages::response::ErrorResponse;
 
+// The messages module contains all the messages that the server and client can send to each other.
+pub mod copy;
 pub mod info;
 pub mod list_files;
 pub mod ping;
@@ -16,6 +19,7 @@ pub enum Packet {
     ErrorResponse(ErrorResponse),
     Info(InfoMessage),
     InfoResponse(InfoResponse),
+    CopyFile(CopyFileMessage),
 }
 
 pub trait Message {
@@ -57,6 +61,10 @@ impl Message for Packet {
                 bytes.push(6); // Type identifier
                 bytes.extend_from_slice(&packet.to_bytes());
             }
+            Packet::CopyFile(packet) => {
+                bytes.push(7); // Type identifier
+                bytes.extend_from_slice(&packet.to_bytes());
+            }
         }
 
         bytes
@@ -72,6 +80,7 @@ impl Message for Packet {
             4 => Packet::ErrorResponse(ErrorResponse::from_bytes(&bytes[1..])),
             5 => Packet::Info(InfoMessage::from_bytes(&bytes[1..])),
             6 => Packet::InfoResponse(InfoResponse::from_bytes(&bytes[1..])),
+            7 => Packet::CopyFile(CopyFileMessage::from_bytes(&bytes[1..])),
             _ => {
                 //If the packet is invalid, return a ErrorResponse packet
                 let error = ErrorResponse {
