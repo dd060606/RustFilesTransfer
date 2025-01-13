@@ -8,9 +8,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ea3f9c77-e91c-4c07-a8d0-c9bc473402b2" name="Changes" comment="work on tcp packets + add select command to switch between clients">
+      <change afterPath="$PROJECT_DIR$/../common/src/messages/info.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../client/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../client/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/client.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/client.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../common/src/messages/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../common/src/messages/mod.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/commands/completer.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/completer.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/commands/list.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/list.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/connections.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/connections.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/server.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -108,6 +114,7 @@
       <workItem from="1736081098280" duration="6568000" />
       <workItem from="1736167246482" duration="4791000" />
       <workItem from="1736690967961" duration="446000" />
+      <workItem from="1736778588134" duration="2324000" />
     </task>
     <task id="LOCAL-00001" summary="work on tcp server">
       <option name="closed" value="true" />

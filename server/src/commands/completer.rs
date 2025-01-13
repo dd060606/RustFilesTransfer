@@ -1,10 +1,8 @@
 use std::sync::Arc;
 
-use common::messages::list_files::ListFilesMessage;
-use common::messages::Packet;
-use rustyline::completion::{Completer, extract_word, FilenameCompleter, Pair};
-use rustyline::Context;
+use rustyline::completion::{extract_word, Completer, FilenameCompleter, Pair};
 use rustyline::error::ReadlineError;
+use rustyline::Context;
 use rustyline_derive::{Helper, Highlighter, Hinter, Validator};
 use tokio::sync::Mutex;
 
@@ -88,55 +86,8 @@ fn auto_complete(
                 });
             }
         }
-        // Auto complete the list_files command
-        else if pre_cmd.eq_ignore_ascii_case("ls") || pre_cmd.eq_ignore_ascii_case("dir") {
-            let path = extract_path(line);
-            // Send a list file request to the client
-            let mut connections = connections.lock().await;
-            let message = ListFilesMessage {
-                path,
-                only_directories: true,
-            };
-            let packet = Packet::ListFiles(message);
-            // Send the packet and wait for the response
-            if let Ok(packet) = connections.send_message(&packet).await {
-                //If the response is a list files response, add the files to the matches
-                if let Packet::ListFilesResponse(response) = packet {
-                    for file in response.files {
-                        matches.push(Pair {
-                            display: file.clone(),
-                            replacement: file,
-                        });
-                    }
-                }
-            }
-        }
-
         matches
     });
 
     Ok((start, res))
-}
-
-// Extract the path from a line
-fn extract_path(line: &str) -> String {
-    let command = line.trim();
-
-    if let Some(path_part) = command.split_once(" ") {
-        // Get the second part of the split to get the path
-        let path_part = path_part.1.trim();
-
-        // Check if the path is enclosed in quotes
-        if (path_part.starts_with('"') && path_part.ends_with('"')) ||
-            (path_part.starts_with('\'') && path_part.ends_with('\'')) {
-            // Remove the enclosing quotes and return the inner part
-            path_part[1..path_part.len() - 1].to_string()
-        } else {
-            // Return the path as it is (no quotes)
-            path_part.to_string()
-        }
-    } else {
-        // If there is no command or no space, return an empty string
-        "".to_string()
-    }
 }

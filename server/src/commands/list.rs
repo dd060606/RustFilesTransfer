@@ -20,22 +20,38 @@ impl Command for ListCommand {
     }
 
     async fn execute(&self, registry: &CommandRegistry, _args: Vec<String>) {
-        println!("{}", "ID       IP".cyan());
-        println!("{}", "--       --".cyan());
-        //Print each connections
+        println!(
+            "{}",
+            "ID       IP                USERNAME        COMPUTER".cyan()
+        );
+        println!(
+            "{}",
+            "--       --                --------        --------".cyan()
+        );
+        // Print each connection
         let connections = registry.connections.lock().await;
 
         for connection in &connections.clients {
             let id = *connection.0;
             let address = connection.1.peer_addr().unwrap();
+            let client_info = connections.get_client_info(id);
+
             if connections.current_client == id {
-                //Print the selected connection in green
+                // Print the selected connection in green
                 println!(
                     "{}",
-                    format!("{}        {}  (SELECTED)", id, address).bright_green()
-                )
+                    format!(
+                        "{:<8} {:<18} {:<15} {:<15} (SELECTED)",
+                        id, address, client_info.username, client_info.computer_name
+                    )
+                    .bright_green()
+                );
             } else {
-                println!("{}        {}", id, address);
+                // Print the other connections
+                println!(
+                    "{:<8} {:<18} {:<15} {:<15}",
+                    id, address, client_info.username, client_info.computer_name
+                );
             }
         }
     }

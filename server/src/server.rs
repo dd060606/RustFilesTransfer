@@ -1,11 +1,13 @@
 use std::sync::Arc;
 
 use colored::Colorize;
+use common::messages::info::InfoMessage;
+use common::messages::Packet;
 use rustyline::ExternalPrinter;
 use tokio::net::TcpListener;
 use tokio::sync::Mutex;
 
-use crate::connections::Connections;
+use crate::connections::{ClientInfo, Connections};
 use crate::ext_success;
 
 pub struct Server<P: ExternalPrinter + Send + Sync + 'static> {
@@ -13,7 +15,6 @@ pub struct Server<P: ExternalPrinter + Send + Sync + 'static> {
     connections: Arc<Mutex<Connections>>,
     //Rusyline printer
     printer: Arc<Mutex<P>>,
-
 }
 
 impl<P: ExternalPrinter + Send + Sync + 'static> Server<P> {
@@ -26,7 +27,6 @@ impl<P: ExternalPrinter + Send + Sync + 'static> Server<P> {
     }
 
     pub async fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-
         //Search for an available port
         let listener = search_port(&mut self.port).await;
 
@@ -38,11 +38,26 @@ impl<P: ExternalPrinter + Send + Sync + 'static> Server<P> {
         let mut next_id: u16 = 1;
         loop {
             let (socket, addr) = listener.accept().await?;
-            ext_success!(printer, "New connection: {} ({})", addr ,next_id);
+            ext_success!(printer, "New connection: {} ({})", addr, next_id);
 
             // Add the connection to the list
             let mut connections = self.connections.lock().await;
             connections.add_connection(next_id, socket);
+            // Add the connection info
+            let info_msg = InfoMessage {};
+            let info_packet = Packet::Info(info_msg);
+            if let Ok(info) = connections.send_message_to(&info_packet, next_id).await {
+                // If the response is an InfoResponse, add the info to the list
+                if let Packet::InfoResponse(response) = info {
+                    connections.add_info(
+                        next_id,
+                        ClientInfo {
+                            username: response.username,
+                            computer_name: response.computer_name,
+                        },
+                    );
+                }
+            }
             // Increment the next ID for the next connection
             next_id += 1;
         }

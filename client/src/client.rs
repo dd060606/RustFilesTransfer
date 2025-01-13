@@ -3,10 +3,11 @@ use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use common::messages::{Message, Packet};
+use common::messages::info::InfoResponse;
 use common::messages::list_files::ListFilesResponse;
 use common::messages::ping::PingMessage;
 use common::messages::response::ErrorResponse;
+use common::messages::{Message, Packet};
 use tokio::fs::read_dir;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
@@ -92,7 +93,6 @@ pub async fn handle_message(
                         }
                         files.push(entry_path.to_string_lossy().to_string());
                     }
-                    println!("Sending list of files to server... {:?}", files);
                     // Send the list of files back to the server
                     let response = ListFilesResponse { files };
                     let response_packet = Packet::ListFilesResponse(response);
@@ -102,6 +102,20 @@ pub async fn handle_message(
                     send_error(stream, err.to_string()).await?;
                 }
             }
+        }
+        Packet::Info(_) => {
+            //Info response
+            let info_response = InfoResponse {
+                // Get the username and computer name from the environment variables
+                username: env::var("USERNAME")
+                    .or_else(|_| env::var("USER"))
+                    .unwrap_or("Unknown".to_string()),
+                computer_name: env::var("COMPUTERNAME")
+                    .or_else(|_| env::var("HOSTNAME"))
+                    .unwrap_or("Unknown".to_string()),
+            };
+            let info_packet = Packet::InfoResponse(info_response);
+            stream.write_all(&*info_packet.to_bytes()).await?;
         }
         _ => {}
     }
