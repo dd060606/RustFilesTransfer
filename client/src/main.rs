@@ -3,6 +3,7 @@ use std::env;
 use crate::client::run_tcp_client;
 
 mod client;
+mod files;
 
 #[tokio::main]
 async fn main() {
@@ -15,4 +16,3 @@ async fn main() {
     let server_address = format!("{}:{}", args[1], args[2]);
     run_tcp_client(server_address).await;
 }
-

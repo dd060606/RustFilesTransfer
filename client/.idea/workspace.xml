@@ -8,13 +8,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b66d26d6-22ac-4085-9548-b118c5e4b5cf" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../common/src/messages/copy.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../server/src/commands/copy.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/files.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/client.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../common/src/messages/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../common/src/messages/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../common/src/messages/response.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../common/src/messages/response.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../server/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../server/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../server/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/src/commands/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/commands/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/commands/copy.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/commands/copy.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/connections.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/connections.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -110,6 +112,9 @@
       <workItem from="1736167396299" duration="4548000" />
       <workItem from="1736778581422" duration="2331000" />
       <workItem from="1736782787459" duration="739000" />
+      <workItem from="1736859459834" duration="1143000" />
+      <workItem from="1736860639506" duration="486000" />
+      <workItem from="1736868562129" duration="1712000" />
     </task>
     <servers />
   </component>

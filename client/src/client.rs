@@ -1,14 +1,14 @@
 use std::env;
 use std::error::Error;
-use std::path::{Path, PathBuf};
 use std::time::Duration;
 
+use crate::files::list_files;
 use common::messages::info::InfoResponse;
 use common::messages::list_files::ListFilesResponse;
 use common::messages::ping::PingMessage;
-use common::messages::response::ErrorResponse;
+use common::messages::response::{ConfirmResponse, ErrorResponse};
 use common::messages::{Message, Packet};
-use tokio::fs::read_dir;
+use tokio::fs::copy;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::time::sleep;
@@ -20,6 +20,8 @@ pub async fn run_tcp_client(addr: String) {
                 println!("Connected to file server!");
 
                 let mut buffer = [0u8; 1024];
+                let mut total_data = Vec::new();
+
                 loop {
                     match stream.read(&mut buffer).await {
                         Ok(0) => {
@@ -28,11 +30,21 @@ pub async fn run_tcp_client(addr: String) {
                             break; // Exit the loop to auto reconnect
                         }
                         Ok(n) => {
-                            if let Err(e) =
-                                handle_message(&mut stream, &Packet::from_bytes(&buffer[..n])).await
-                            {
-                                eprintln!("Failed to handle message: {}", e);
-                                break; // Exit the loop to auto reconnect
+                            total_data.extend_from_slice(&buffer[..n]);
+
+                            // Check if the message is complete
+                            if message_complete(&total_data) {
+                                // Once the message is complete, handle the message
+                                if let Err(e) =
+                                    handle_message(&mut stream, &Packet::from_bytes(&total_data))
+                                        .await
+                                {
+                                    eprintln!("Failed to handle message: {}", e);
+                                    break; // Exit the loop to auto reconnect
+                                }
+
+                                // Clear the buffer after processing the message
+                                total_data.clear();
                             }
                         }
                         Err(e) => {
@@ -40,6 +52,7 @@ pub async fn run_tcp_client(addr: String) {
                             break; // Exit the loop to auto reconnect
                         }
                     }
+
                     sleep(Duration::from_millis(100)).await; // Prevent busy-waiting
                 }
             }
@@ -54,6 +67,21 @@ pub async fn run_tcp_client(addr: String) {
     }
 }
 
+// Helper function to determine if the message is complete
+fn message_complete(data: &[u8]) -> bool {
+    if data.len() < 5 {
+        return false; // We need at least 5 bytes: 1 for type_id, 4 for the size
+    }
+
+    // Read the size from the first 4 bytes after the type identifier
+    let size_bytes = &data[1..5]; // The 4 bytes after the type identifier
+    let message_size = u32::from_be_bytes(size_bytes.try_into().unwrap()) as usize;
+
+    // Check if the total length of data is at least as large as the size + 5 (type_id + size)
+    data.len() >= 5 + message_size
+}
+
+// Handle the message received from the server
 pub async fn handle_message(
     stream: &mut TcpStream,
     message: &Packet,
@@ -68,39 +96,14 @@ pub async fn handle_message(
             stream.write_all(&*pong_packet.to_bytes()).await?;
         }
         Packet::ListFiles(msg) => {
-            let path = if msg.path.is_empty() {
-                // If no path is provided, use the current directory
-                env::current_dir().unwrap_or_default()
-            } else {
-                let pathbuf = PathBuf::from(&msg.path);
-                // If the path does not exist return parent directory
-                if !pathbuf.exists() {
-                    pathbuf.parent().unwrap_or(Path::new("/")).to_path_buf()
-                } else {
-                    pathbuf
-                }
-            };
-            // Handle the result of reading the directory
-            match read_dir(path).await {
-                Ok(mut entries) => {
-                    let mut files: Vec<String> = Vec::new();
-                    // Iterate over the entries in the directory
-                    while let Some(entry) = entries.next_entry().await? {
-                        let entry_path = entry.path();
-                        // Skip files if only directories are requested
-                        if msg.only_directories && entry_path.is_file() {
-                            continue;
-                        }
-                        files.push(entry_path.to_string_lossy().to_string());
-                    }
+            match list_files(&msg.path, msg.only_directories).await {
+                Ok(files) => {
                     // Send the list of files back to the server
                     let response = ListFilesResponse { files };
                     let response_packet = Packet::ListFilesResponse(response);
                     stream.write_all(&*response_packet.to_bytes()).await?;
                 }
-                Err(err) => {
-                    send_error(stream, err.to_string()).await?;
-                }
+                Err(e) => send_error(stream, e.to_string()).await?,
             }
         }
         Packet::Info(_) => {
@@ -116,6 +119,17 @@ pub async fn handle_message(
             };
             let info_packet = Packet::InfoResponse(info_response);
             stream.write_all(&*info_packet.to_bytes()).await?;
+        }
+        Packet::CopyFile(msg) => {
+            // Copy file
+            match copy(&msg.source, &msg.output).await {
+                Ok(_) => {
+                    let confirm_message = ConfirmResponse {};
+                    let confirm_response = Packet::ConfirmResponse(confirm_message);
+                    stream.write_all(&*confirm_response.to_bytes()).await?;
+                }
+                Err(e) => send_error(stream, e.to_string()).await?,
+            }
         }
         _ => {}
     }

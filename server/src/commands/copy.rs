@@ -1,5 +1,9 @@
 use super::{Command, CommandRegistry};
+use crate::{error, success};
 use async_trait::async_trait;
+use colored::Colorize;
+use common::messages::copy::CopyFileMessage;
+use common::messages::Packet;
 use regex::Regex;
 
 pub struct CopyCommand;
@@ -31,7 +35,6 @@ impl Command for CopyCommand {
         }
 
         let args_str = args.join(" ");
-        // Regex pattern to match arguments enclosed in quotes
         // Regex pattern to match arguments enclosed in double or single quotes, or standalone arguments
         let re = Regex::new(r#"'([^']*)'|"([^"]*)"|(\S+)"#).unwrap();
 
@@ -53,7 +56,27 @@ impl Command for CopyCommand {
         let source = &parsed_args[0];
         let destination = &parsed_args[1];
 
-        println!("Source: {}", source);
-        println!("Destination: {}", destination);
+        // Create a new message
+        let message = CopyFileMessage {
+            source: std::path::PathBuf::from(source),
+            output: std::path::PathBuf::from(destination),
+        };
+        let packet = Packet::CopyFile(message);
+        let mut connections = registry.connections.lock().await;
+        //Send the packet to the client
+        match connections.send_message(&packet).await {
+            Ok(res) => match res {
+                Packet::ConfirmResponse(_) => {
+                    success!("File copied successfully");
+                }
+                Packet::ErrorResponse(response) => {
+                    error!("Error: {}", response.error);
+                }
+                _ => {}
+            },
+            Err(e) => {
+                error!("Failed to send message: {}", e);
+            }
+        }
     }
 }

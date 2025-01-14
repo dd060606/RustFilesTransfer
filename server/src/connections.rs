@@ -72,20 +72,37 @@ impl Connections {
                     return Err(e.to_string());
                 }
             }
-            // Wait for a response
+
+            // Read the response
             let mut buffer = [0; 1024];
-            match stream.read(&mut buffer).await {
-                Ok(size) => {
-                    if size == 0 {
-                        self.remove_connection(self.current_client);
-                        Err(String::from("Error while receiving the message!"))
-                    } else {
-                        // Return the response
-                        Ok(Packet::from_bytes(&buffer[..size]))
+            let mut total_data = Vec::new();
+
+            loop {
+                match stream.read(&mut buffer).await {
+                    Ok(size) => {
+                        if size == 0 {
+                            // If total_data is empty, the connection was closed unexpectedly
+                            if total_data.is_empty() {
+                                self.remove_connection(self.current_client);
+                                return Err(String::from("Connection closed unexpectedly!"));
+                            } else {
+                                // If there is already data, consider it a normal closure
+                                break;
+                            }
+                        } else {
+                            total_data.extend_from_slice(&buffer[..size]);
+                            if size < 1024 {
+                                break;
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        return Err(format!("Failed to read from server: {}", e));
                     }
                 }
-                Err(e) => Err(format!("Failed to read from server: {}", e)),
             }
+            // Convert the total_data into a Packet
+            Ok(Packet::from_bytes(&total_data))
         } else {
             Err(format!(
                 "Client {} not found, please change current client using 'select <id>'",
