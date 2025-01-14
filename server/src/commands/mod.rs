@@ -10,6 +10,7 @@ mod help;
 mod list;
 mod list_files;
 mod ping;
+mod remove;
 mod select;
 
 #[async_trait]
@@ -38,6 +39,7 @@ impl CommandRegistry {
         registry.register(Box::new(select::SelectCommand));
         registry.register(Box::new(list_files::ListFilesCommand));
         registry.register(Box::new(copy::CopyCommand));
+        registry.register(Box::new(remove::RemoveFileCommand));
 
         registry
     }

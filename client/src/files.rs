@@ -1,7 +1,7 @@
 use std::env;
 use std::io::Error;
 use std::path::{Path, PathBuf};
-use tokio::fs::read_dir;
+use tokio::fs::{read_dir, remove_dir_all, remove_file};
 
 pub async fn list_files(path_str: &String, only_directories: bool) -> Result<Vec<String>, Error> {
     let path = if path_str.is_empty() {
@@ -32,5 +32,19 @@ pub async fn list_files(path_str: &String, only_directories: bool) -> Result<Vec
             Ok(files)
         }
         Err(err) => Err(err),
+    }
+}
+
+pub async fn remove(path: &PathBuf) -> Result<(), Error> {
+    if path.is_dir() {
+        match remove_dir_all(path).await {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e),
+        }
+    } else {
+        match remove_file(path).await {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e),
+        }
     }
 }

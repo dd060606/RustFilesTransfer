@@ -2,6 +2,7 @@ use crate::messages::copy::CopyFileMessage;
 use crate::messages::info::{InfoMessage, InfoResponse};
 use crate::messages::list_files::{ListFilesMessage, ListFilesResponse};
 use crate::messages::ping::PingMessage;
+use crate::messages::remove::RemoveMessage;
 use crate::messages::response::{ConfirmResponse, ErrorResponse};
 
 // The messages module contains all the messages that the server and client can send to each other.
@@ -9,6 +10,7 @@ pub mod copy;
 pub mod info;
 pub mod list_files;
 pub mod ping;
+pub mod remove;
 pub mod response;
 
 // Available messages for the server and client to communicate with each other.
@@ -21,6 +23,7 @@ pub enum Packet {
     Info(InfoMessage),
     InfoResponse(InfoResponse),
     CopyFile(CopyFileMessage),
+    RemoveFile(RemoveMessage),
 }
 
 pub trait Message {
@@ -53,6 +56,7 @@ impl Message for Packet {
             Packet::Info(packet) => serialize_packet(6, &packet.to_bytes()),
             Packet::InfoResponse(packet) => serialize_packet(7, &packet.to_bytes()),
             Packet::CopyFile(packet) => serialize_packet(8, &packet.to_bytes()),
+            Packet::RemoveFile(packet) => serialize_packet(9, &packet.to_bytes()),
         }
     }
 
@@ -70,6 +74,7 @@ impl Message for Packet {
             6 => Packet::Info(InfoMessage::from_bytes(&bytes[5..5 + size])),
             7 => Packet::InfoResponse(InfoResponse::from_bytes(&bytes[5..5 + size])),
             8 => Packet::CopyFile(CopyFileMessage::from_bytes(&bytes[5..5 + size])),
+            9 => Packet::RemoveFile(RemoveMessage::from_bytes(&bytes[5..5 + size])),
             _ => {
                 // The packet type is unknown
                 let error = ErrorResponse {

@@ -31,7 +31,7 @@ impl Command for ListFilesCommand {
     async fn execute(&self, registry: &CommandRegistry, args: Vec<String>) {
         // Create a new message
         let message = ListFilesMessage {
-            path: args.join(" "),
+            path: args.join(" ").replace("\"", "").replace("\'", ""),
             only_directories: false,
         };
         // Create a new packet with the message

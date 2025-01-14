@@ -2,7 +2,7 @@ use std::env;
 use std::error::Error;
 use std::time::Duration;
 
-use crate::files::list_files;
+use crate::files::{list_files, remove};
 use common::messages::info::InfoResponse;
 use common::messages::list_files::ListFilesResponse;
 use common::messages::ping::PingMessage;
@@ -123,11 +123,14 @@ pub async fn handle_message(
         Packet::CopyFile(msg) => {
             // Copy file
             match copy(&msg.source, &msg.output).await {
-                Ok(_) => {
-                    let confirm_message = ConfirmResponse {};
-                    let confirm_response = Packet::ConfirmResponse(confirm_message);
-                    stream.write_all(&*confirm_response.to_bytes()).await?;
-                }
+                Ok(_) => send_confirm(stream).await?,
+                Err(e) => send_error(stream, e.to_string()).await?,
+            }
+        }
+        Packet::RemoveFile(msg) => {
+            // Remove file
+            match remove(&msg.path).await {
+                Ok(_) => send_confirm(stream).await?,
                 Err(e) => send_error(stream, e.to_string()).await?,
             }
         }
@@ -141,5 +144,13 @@ pub async fn send_error(stream: &mut TcpStream, error: String) -> Result<(), Box
     let error_message = ErrorResponse { error: error };
     let error_packet = Packet::ErrorResponse(error_message);
     let _ = stream.write_all(&*error_packet.to_bytes()).await?;
+    Ok(())
+}
+
+// Send a confirm response to the server
+pub async fn send_confirm(stream: &mut TcpStream) -> Result<(), Box<dyn Error>> {
+    let confirm_message = ConfirmResponse {};
+    let confirm_response = Packet::ConfirmResponse(confirm_message);
+    stream.write_all(&*confirm_response.to_bytes()).await?;
     Ok(())
 }

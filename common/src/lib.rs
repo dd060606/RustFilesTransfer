@@ -1,10 +1,10 @@
 pub mod messages;
-
+mod utils;
 
 #[cfg(test)]
 mod tests {
-    use crate::messages::{Packet, Message};
     use crate::messages::ping::PingMessage;
+    use crate::messages::{Message, Packet};
 
     #[test]
     fn it_works() {
