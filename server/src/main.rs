@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use colored::Colorize;
-use rustyline::completion::FilenameCompleter;
 use rustyline::error::ReadlineError;
 use rustyline::{CompletionType, Config, EditMode, Editor};
 use tokio::sync::Mutex;
@@ -31,11 +30,8 @@ async fn main() {
         .completion_type(CompletionType::List)
         .edit_mode(EditMode::Emacs)
         .build();
-    let cmd_helper = CommandHelper {
-        file_completer: FilenameCompleter::new(),
-        commands: cmd_registry.get_commands(),
-        connections: connections.clone(),
-    };
+    let cmd_helper = CommandHelper::new(cmd_registry.get_commands(), connections.clone());
+
     let mut rl = Editor::with_config(config).expect("Failed to create editor");
     rl.set_helper(Some(cmd_helper));
 
