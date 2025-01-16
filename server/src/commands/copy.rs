@@ -1,10 +1,10 @@
 use super::{Command, CommandRegistry};
+use crate::utils::files::get_path_from_args;
 use crate::{error, success};
 use async_trait::async_trait;
 use colored::Colorize;
 use common::messages::copy::CopyFileMessage;
 use common::messages::Packet;
-use regex::Regex;
 
 pub struct CopyCommand;
 
@@ -34,27 +34,7 @@ impl Command for CopyCommand {
             return;
         }
 
-        let args_str = args.join(" ");
-        // Regex pattern to match arguments enclosed in double or single quotes, or standalone arguments
-        let re = Regex::new(r#"'([^']*)'|"([^"]*)"|(\S+)"#).unwrap();
-
-        let mut parsed_args: Vec<String> = Vec::new();
-
-        for cap in re.captures_iter(&args_str) {
-            if let Some(single_quoted) = cap.get(1) {
-                // Argument was in single quotes
-                parsed_args.push(single_quoted.as_str().to_string());
-            } else if let Some(double_quoted) = cap.get(2) {
-                // Argument was in double quotes
-                parsed_args.push(double_quoted.as_str().to_string());
-            } else if let Some(unquoted) = cap.get(3) {
-                // Argument was not in quotes
-                parsed_args.push(unquoted.as_str().to_string());
-            }
-        }
-
-        let source = &parsed_args[0];
-        let destination = &parsed_args[1];
+        let (source, destination) = get_path_from_args(&args);
 
         // Create a new message
         let message = CopyFileMessage {

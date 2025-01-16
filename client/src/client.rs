@@ -8,7 +8,7 @@ use common::messages::list_files::ListFilesResponse;
 use common::messages::ping::PingMessage;
 use common::messages::response::{ConfirmResponse, ErrorResponse};
 use common::messages::{Message, Packet};
-use tokio::fs::copy;
+use tokio::fs::{copy, OpenOptions};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::time::sleep;
@@ -19,7 +19,7 @@ pub async fn run_tcp_client(addr: String) {
             Ok(mut stream) => {
                 println!("Connected to file server!");
 
-                let mut buffer = [0u8; 1024];
+                let mut buffer = [0; 4096];
                 let mut total_data = Vec::new();
 
                 loop {
@@ -134,7 +134,40 @@ pub async fn handle_message(
                 Err(e) => send_error(stream, e.to_string()).await?,
             }
         }
-        _ => {}
+        Packet::PrepareFile(msg) => {
+            // Check if the file can be written at this location
+            match OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(&msg.output)
+                .await
+            {
+                Ok(mut file) => {
+                    // Set the file operation to the new file
+                    send_confirm(stream).await?;
+                    // Download the remote file
+                    println!("Downloading file... ({})", msg.output.to_string_lossy());
+                    let mut buf = [0; 65536];
+                    let mut total_bytes_received: usize = 0;
+                    loop {
+                        let n = stream.read(&mut buf).await?;
+                        if n == 0 {
+                            break;
+                        }
+                        total_bytes_received += n;
+                        file.write_all(&buf[..n]).await?;
+                        // Check if we have received all the bytes
+                        if total_bytes_received == msg.size as usize {
+                            break;
+                        }
+                    }
+                }
+                Err(e) => send_error(stream, e.to_string()).await?,
+            }
+        }
+        _ => {
+            eprintln!("Received unknown message");
+        }
     }
     Ok(())
 }

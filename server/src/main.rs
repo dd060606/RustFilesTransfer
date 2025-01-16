@@ -15,6 +15,7 @@ mod commands;
 mod connections;
 mod macros;
 mod server;
+mod utils;
 
 #[tokio::main]
 async fn main() {

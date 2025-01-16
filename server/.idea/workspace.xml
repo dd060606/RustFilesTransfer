@@ -7,10 +7,19 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ea3f9c77-e91c-4c07-a8d0-c9bc473402b2" name="Changes" comment="work on tcp packets + add select command to switch between clients">
+    <list default="true" id="ea3f9c77-e91c-4c07-a8d0-c9bc473402b2" name="Changes" comment="feat: remote list files completer">
+      <change afterPath="$PROJECT_DIR$/../common/src/messages/files.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/upload.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/utils/files.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/utils/mod.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../client/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../client/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/client.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/client.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../common/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../common/src/lib.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../common/src/messages/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../common/src/messages/mod.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/commands/completer.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/completer.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/commands/copy.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/copy.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/commands/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/connections.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/connections.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -113,7 +122,8 @@
       <workItem from="1736782783828" duration="2631000" />
       <workItem from="1736859452873" duration="1646000" />
       <workItem from="1736868555045" duration="3834000" />
-      <workItem from="1736957765136" duration="2258000" />
+      <workItem from="1736957765136" duration="2479000" />
+      <workItem from="1737029542547" duration="8363000" />
     </task>
     <task id="LOCAL-00001" summary="work on tcp server">
       <option name="closed" value="true" />
@@ -123,7 +133,15 @@
       <option name="project" value="LOCAL" />
       <updated>1735905761055</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="feat: remote list files completer">
+      <option name="closed" value="true" />
+      <created>1736960282757</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1736960282761</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -143,6 +161,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="work on tcp server" />
     <MESSAGE value="work on tcp packets + add select command to switch between clients" />
-    <option name="LAST_COMMIT_MESSAGE" value="work on tcp packets + add select command to switch between clients" />
+    <MESSAGE value="feat: remote list files completer" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: remote list files completer" />
   </component>
 </project>

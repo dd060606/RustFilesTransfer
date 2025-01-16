@@ -12,6 +12,7 @@ mod list_files;
 mod ping;
 mod remove;
 mod select;
+mod upload;
 
 #[async_trait]
 pub trait Command: Send + Sync {
@@ -40,6 +41,7 @@ impl CommandRegistry {
         registry.register(Box::new(list_files::ListFilesCommand));
         registry.register(Box::new(copy::CopyCommand));
         registry.register(Box::new(remove::RemoveFileCommand));
+        registry.register(Box::new(upload::UploadCommand));
 
         registry
     }

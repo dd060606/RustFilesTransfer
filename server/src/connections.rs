@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use common::messages::{Message, Packet};
+use std::collections::HashMap;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
@@ -103,6 +102,22 @@ impl Connections {
             }
             // Convert the total_data into a Packet
             Ok(Packet::from_bytes(&total_data))
+        } else {
+            Err(format!(
+                "Client {} not found, please change current client using 'select <id>'",
+                self.current_client
+            ))
+        }
+    }
+
+    // Send a file chunk to the selected client without acknowledgment
+    pub async fn send_file_chunk(&mut self, data: &Vec<u8>) -> Result<(), String> {
+        if let Some(stream) = self.get_connection(self.current_client) {
+            if let Err(e) = stream.write_all(data).await {
+                self.remove_connection(self.current_client);
+                return Err(e.to_string());
+            }
+            Ok(())
         } else {
             Err(format!(
                 "Client {} not found, please change current client using 'select <id>'",
