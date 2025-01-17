@@ -88,7 +88,7 @@ impl CommandHelper {
         let res = futures::executor::block_on(async {
             let mut matches = Vec::new();
             // Auto complete the select command
-            if pre_cmd.eq_ignore_ascii_case("select") || pre_cmd.eq_ignore_ascii_case("sel") {
+            if is_pre_cmd(pre_cmd, &["select", "sel"]) {
                 let connections = connections.lock().await;
                 for id in connections.clients.keys() {
                     matches.push(Pair {
@@ -98,36 +98,17 @@ impl CommandHelper {
                 }
             }
             // Auto complete the list files command
-            else if pre_cmd.eq_ignore_ascii_case("ls") || pre_cmd.eq_ignore_ascii_case("dir") {
+            else if is_pre_cmd(pre_cmd, &["ls", "dir"]) {
                 let path = line.split_once(" ").unwrap().1;
-                // Remove quotes from the path
-                let path = path.trim().replace("\"", "").replace("\'", "");
-                let mut connections = connections.lock().await;
-                // Create a new message
-                let message = ListFilesMessage {
-                    path: path.clone(),
-                    only_directories: true,
-                };
-                // Create a new packet with the message
-                let packet = Packet::ListFiles(message);
-                // Send the packet to the client
-                match connections.send_message(&packet).await {
-                    Ok(res) => match res {
-                        Packet::ListFilesResponse(response) => {
-                            for file in response.files {
-                                // Check if the path starts with the file
-                                if file.starts_with(&path) {
-                                    matches.push(Pair {
-                                        display: file.to_string(),
-                                        replacement: file.to_string(),
-                                    });
-                                }
-                            }
-                        }
-                        _ => {}
-                    },
-                    Err(_) => {}
-                };
+                matches = remote_completion(path, true, connections).await;
+            }
+            // Auto complete the remove file command
+            else if is_pre_cmd(pre_cmd, &["rm", "del"]) {
+                let path = line.split_once(" ").unwrap().1;
+                matches = remote_completion(path, false, connections).await;
+            } else if is_pre_cmd(pre_cmd, &["cp", "copy"]) {
+                let path = line.split_once(" ").unwrap().1;
+                matches = remote_completion(path, false, connections).await;
             }
 
             matches
@@ -135,4 +116,45 @@ impl CommandHelper {
 
         Ok((start, res))
     }
+}
+fn is_pre_cmd(pre_cmd: &str, cmd: &[&str]) -> bool {
+    cmd.iter().any(|&c| pre_cmd.eq_ignore_ascii_case(c))
+}
+
+// Remote file completion
+async fn remote_completion(
+    current_path: &str,
+    only_dir: bool,
+    connections: &Arc<Mutex<Connections>>,
+) -> Vec<Pair> {
+    let mut matches = Vec::new();
+    // Remove quotes from the path
+    let path = current_path.trim().replace("\"", "").replace("\'", "");
+    let mut connections = connections.lock().await;
+    // Create a new message
+    let message = ListFilesMessage {
+        path: path.clone(),
+        only_directories: only_dir,
+    };
+    // Create a new packet with the message
+    let packet = Packet::ListFiles(message);
+    // Send the packet to the client
+    match connections.send_message(&packet).await {
+        Ok(res) => match res {
+            Packet::ListFilesResponse(response) => {
+                for file in response.files {
+                    // Check if the path starts with the file
+                    if file.starts_with(&path) {
+                        matches.push(Pair {
+                            display: file.to_string(),
+                            replacement: file.to_string(),
+                        });
+                    }
+                }
+            }
+            _ => {}
+        },
+        Err(_) => {}
+    };
+    matches
 }

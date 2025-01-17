@@ -1,36 +1,37 @@
 use regex::Regex;
 use std::io::{stdout, Write};
 
-//Utils
-pub fn get_path_from_args(args: &Vec<String>) -> (String, String) {
-    let args_str = args.join(" ");
-    // Regex pattern to match arguments enclosed in double or single quotes, or standalone arguments
-    let re = Regex::new(r#"'([^']*)'|"([^"]*)"|(\S+)"#).unwrap();
+//Extract paths from a string
+pub fn extract_paths(input: &str) -> Vec<&str> {
+    // Create a regex pattern that matches:
+    // 1. Quoted paths (both single and double quotes)
+    // 2. Unquoted paths (containing typical path characters)
+    let pattern = r#"(?x)
+        # Match quoted paths (both single and double quotes)
+        (?:"([^"]+)"|'([^']+)')  # Capture paths in quotes
+        |
+        # Match unquoted paths
+        ([A-Za-z]:[\\/][^\s"']+  # Windows paths starting with drive letter
+        |
+        /[^\s"']+)               # Unix-style paths starting with /
+    "#;
 
-    let mut parsed_args: Vec<String> = Vec::new();
+    let re = Regex::new(pattern).unwrap();
+    let mut paths = Vec::new();
 
-    for cap in re.captures_iter(&args_str) {
-        if let Some(single_quoted) = cap.get(1) {
-            // Argument was in single quotes
-            parsed_args.push(single_quoted.as_str().to_string());
-        } else if let Some(double_quoted) = cap.get(2) {
-            // Argument was in double quotes
-            parsed_args.push(double_quoted.as_str().to_string());
+    for cap in re.captures_iter(input) {
+        // Check each capture group and add the non-empty one
+        if let Some(quoted_double) = cap.get(1) {
+            paths.push(quoted_double.as_str());
+        } else if let Some(quoted_single) = cap.get(2) {
+            paths.push(quoted_single.as_str());
         } else if let Some(unquoted) = cap.get(3) {
-            // Argument was not in quotes
-            parsed_args.push(unquoted.as_str().to_string());
+            paths.push(unquoted.as_str());
         }
     }
 
-    // Check if there are at least two arguments
-    if parsed_args.len() > 1 {
-        (parsed_args[0].clone(), parsed_args[1].clone())
-    } else {
-        // If only one argument is provided, return it as both source and destination
-        (parsed_args[0].clone(), parsed_args[0].clone())
-    }
+    paths
 }
-
 pub fn print_progress(current: u64, total: u64) {
     let percent = (current as f64 / total as f64) * 100.0;
     let progress = (percent / 2.0).round() as u64; // max 50 chars width

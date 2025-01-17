@@ -1,5 +1,5 @@
 use super::{Command, CommandRegistry};
-use crate::utils::files::{get_path_from_args, print_progress};
+use crate::utils::files::{extract_paths, print_progress};
 use crate::{error, success};
 use async_trait::async_trait;
 use colored::Colorize;
@@ -36,8 +36,11 @@ impl Command for UploadCommand {
             registry.print_usage(self);
             return;
         }
-        // If the user only provides the source file
-        let (source, destination) = get_path_from_args(&args);
+        // Extract the source and destination paths
+        let joined_args = args.join(" ");
+        let paths = extract_paths(&joined_args);
+        let source = paths[0];
+        let destination = if paths.len() > 1 { paths[1] } else { source };
 
         // Open the local file
         match File::open(source).await {

@@ -1,10 +1,11 @@
 use super::{Command, CommandRegistry};
-use crate::utils::files::get_path_from_args;
+use crate::utils::files::extract_paths;
 use crate::{error, success};
 use async_trait::async_trait;
 use colored::Colorize;
 use common::messages::copy::CopyFileMessage;
 use common::messages::Packet;
+use std::path::PathBuf;
 
 pub struct CopyCommand;
 
@@ -34,12 +35,16 @@ impl Command for CopyCommand {
             return;
         }
 
-        let (source, destination) = get_path_from_args(&args);
+        // Extract the source and destination paths
+        let joined_args = args.join(" ");
+        let paths = extract_paths(&joined_args);
+        let source = paths[0];
+        let destination = if paths.len() > 1 { paths[1] } else { source };
 
         // Create a new message
         let message = CopyFileMessage {
-            source: std::path::PathBuf::from(source),
-            output: std::path::PathBuf::from(destination),
+            source: PathBuf::from(source),
+            output: PathBuf::from(destination),
         };
         let packet = Packet::CopyFile(message);
         let mut connections = registry.connections.lock().await;
