@@ -1,5 +1,6 @@
-use common::messages::{Message, Packet};
 use std::collections::HashMap;
+
+use common::messages::{Message, Packet};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
@@ -96,7 +97,7 @@ impl Connections {
                         }
                     }
                     Err(e) => {
-                        return Err(format!("Failed to read from server: {}", e));
+                        return Err(format!("Failed to read from client: {}", e));
                     }
                 }
             }

@@ -1,4 +1,5 @@
 use crate::messages::copy::CopyFileMessage;
+use crate::messages::elevate::ElevateMessage;
 use crate::messages::files::PrepareFileMessage;
 use crate::messages::info::{InfoMessage, InfoResponse};
 use crate::messages::list_files::{ListFilesMessage, ListFilesResponse};
@@ -14,6 +15,7 @@ pub mod list_files;
 pub mod ping;
 pub mod remove;
 pub mod response;
+pub mod elevate;
 
 // Available messages for the server and client to communicate with each other.
 pub enum Packet {
@@ -27,6 +29,7 @@ pub enum Packet {
     CopyFile(CopyFileMessage),
     RemoveFile(RemoveMessage),
     PrepareFile(PrepareFileMessage),
+    Elevate(ElevateMessage),
 }
 
 pub trait Message {
@@ -34,8 +37,8 @@ pub trait Message {
     fn to_bytes(&self) -> Vec<u8>;
     // Parses a byte array into a message instance.
     fn from_bytes(data: &[u8]) -> Self
-    where
-        Self: Sized;
+        where
+            Self: Sized;
 }
 
 impl Message for Packet {
@@ -61,6 +64,7 @@ impl Message for Packet {
             Packet::CopyFile(packet) => serialize_packet(8, &packet.to_bytes()),
             Packet::RemoveFile(packet) => serialize_packet(9, &packet.to_bytes()),
             Packet::PrepareFile(packet) => serialize_packet(10, &packet.to_bytes()),
+            Packet::Elevate(packet) => serialize_packet(11, &packet.to_bytes())
         }
     }
 
@@ -80,6 +84,7 @@ impl Message for Packet {
             8 => Packet::CopyFile(CopyFileMessage::from_bytes(&bytes[5..5 + size])),
             9 => Packet::RemoveFile(RemoveMessage::from_bytes(&bytes[5..5 + size])),
             10 => Packet::PrepareFile(PrepareFileMessage::from_bytes(&bytes[5..5 + size])),
+            11 => Packet::Elevate(ElevateMessage::from_bytes(&bytes[5..5 + size])),
             _ => {
                 // The packet type is unknown
                 let error = ErrorResponse {

@@ -1,17 +1,19 @@
 use std::env;
 use std::error::Error;
+use std::process::{Command, exit};
 use std::time::Duration;
 
-use crate::files::{list_files, remove};
+use common::messages::{Message, Packet};
 use common::messages::info::InfoResponse;
 use common::messages::list_files::ListFilesResponse;
 use common::messages::ping::PingMessage;
 use common::messages::response::{ConfirmResponse, ErrorResponse};
-use common::messages::{Message, Packet};
 use tokio::fs::{copy, OpenOptions};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::time::sleep;
+
+use crate::files::{list_files, remove};
 
 pub async fn run_tcp_client(addr: String) {
     loop {
@@ -165,6 +167,16 @@ pub async fn handle_message(
                 Err(e) => send_error(stream, e.to_string()).await?,
             }
         }
+        Packet::Elevate(_) => {
+            // Elevate the client
+            if let Err(e) = run_as_admin() {
+                send_error(stream, e.to_string()).await?;
+            } else {
+                send_confirm(stream).await?;
+                sleep(Duration::from_secs(1)).await;
+                exit(0);
+            }
+        }
         _ => {
             eprintln!("Received unknown message");
         }
@@ -185,5 +197,80 @@ pub async fn send_confirm(stream: &mut TcpStream) -> Result<(), Box<dyn Error>> 
     let confirm_message = ConfirmResponse {};
     let confirm_response = Packet::ConfirmResponse(confirm_message);
     stream.write_all(&*confirm_response.to_bytes()).await?;
+    Ok(())
+}
+
+// Elevate the client if possible
+#[cfg(target_os = "windows")]
+fn run_as_admin() -> Result<(), Box<dyn Error>> {
+    let exe_path = env::current_exe()?;
+
+    // Collect arguments, skipping the program path
+    let args: Vec<String> = env::args().skip(1).collect();
+
+    // Format the command to execute using PowerShell's Start-Process cmdlet
+    let command = format!(
+        "Start-Process \"{}\" -ArgumentList \"{}\" -Verb runAs",
+        exe_path.display(),
+        args.join(" ")
+    );
+    // Use `powershell` to request elevation
+    match Command::new("powershell")
+        .arg("-Command")
+        .arg(command)
+        .spawn()
+    {
+        Ok(mut child) => {
+            // Wait for the child process to finish
+            match child.wait() {
+                Ok(status) => {
+                    if !status.success() {
+                        return Err("Failed to launch the process as administrator.".into());
+                    }
+                }
+                Err(e) => {
+                    return Err(format!("Failed to wait on child process: {}", e).into());
+                }
+            }
+        }
+        Err(e) => {
+            return Err(format!("Failed to execute process with runas: {}", e).into());
+        }
+    }
+
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn run_as_admin() -> Result<(), Box<dyn Error>> {
+    let exe_path = env::current_exe()?;
+
+    // Collect arguments, skipping the program path
+    let args: Vec<String> = env::args().skip(1).collect();
+
+    // Use `sudo` to request root privileges on Linux
+    match Command::new("sudo")
+        .arg(exe_path)
+        .args(&args)
+        .spawn()
+    {
+        Ok(mut child) => {
+            // Wait for the child process to finish
+            match child.wait() {
+                Ok(status) => {
+                    if !status.success() {
+                        return Err("Failed to launch the process as administrator.".into());
+                    }
+                }
+                Err(e) => {
+                    return Err(format!("Failed to wait on child process: {}", e).into());
+                }
+            }
+        }
+        Err(e) => {
+            return Err(format!("Failed to execute process with runas: {}", e).into());
+        }
+    }
+
     Ok(())
 }

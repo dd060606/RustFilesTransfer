@@ -8,12 +8,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ea3f9c77-e91c-4c07-a8d0-c9bc473402b2" name="Changes" comment="feat: remote list files completer">
+      <change afterPath="$PROJECT_DIR$/../common/src/messages/elevate.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/elevate.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../client/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../client/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/client.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/client.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../common/src/messages/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../common/src/messages/mod.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/commands/completer.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/completer.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/commands/copy.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/copy.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/commands/upload.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/upload.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/files.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/files.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/commands/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/connections.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/connections.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -118,6 +121,7 @@
       <workItem from="1736957765136" duration="2479000" />
       <workItem from="1737029542547" duration="8409000" />
       <workItem from="1737124010267" duration="5271000" />
+      <workItem from="1737281385386" duration="4367000" />
     </task>
     <task id="LOCAL-00001" summary="work on tcp server">
       <option name="closed" value="true" />

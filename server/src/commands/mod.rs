@@ -1,8 +1,10 @@
-use crate::connections::Connections;
+use std::sync::Arc;
+
 use async_trait::async_trait;
 use colored::Colorize;
-use std::sync::Arc;
 use tokio::sync::Mutex;
+
+use crate::connections::Connections;
 
 pub mod completer;
 mod copy;
@@ -13,6 +15,7 @@ mod ping;
 mod remove;
 mod select;
 mod upload;
+mod elevate;
 
 #[async_trait]
 pub trait Command: Send + Sync {
@@ -42,6 +45,7 @@ impl CommandRegistry {
         registry.register(Box::new(copy::CopyCommand));
         registry.register(Box::new(remove::RemoveFileCommand));
         registry.register(Box::new(upload::UploadCommand));
+        registry.register(Box::new(elevate::ElevateCommand));
 
         registry
     }
