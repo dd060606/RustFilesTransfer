@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+aes-gcm = "0.10.3"
+rand = "0.8.5"
+x25519-dalek = "2.0.1"

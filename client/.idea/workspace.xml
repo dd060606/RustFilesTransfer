@@ -8,15 +8,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b66d26d6-22ac-4085-9548-b118c5e4b5cf" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../common/src/messages/elevate.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../server/src/commands/elevate.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../common/src/utils/encryption.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/client.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/client.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../common/src/messages/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../common/src/messages/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../common/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../common/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../common/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../common/src/lib.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../common/src/utils/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../common/src/utils/mod.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../server/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../server/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/src/commands/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/commands/mod.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/src/connections.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/connections.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/server.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -119,6 +117,7 @@
       <workItem from="1737029546036" duration="7327000" />
       <workItem from="1737124030693" duration="2378000" />
       <workItem from="1737281403341" duration="4308000" />
+      <workItem from="1737298370292" duration="1716000" />
     </task>
     <servers />
   </component>

@@ -34,6 +34,7 @@ impl<P: ExternalPrinter + Send + Sync + 'static> Server<P> {
         let mut printer = self.printer.lock().await;
         ext_success!(printer, "Server running on {}:{}", "0.0.0.0", self.port);
 
+
         // Counter to assign unique IDs to connections
         let mut next_id: u16 = 1;
         loop {
