@@ -1,19 +1,21 @@
 use std::env;
 use std::error::Error;
-use std::process::{Command, exit};
+use std::process::exit;
 use std::time::Duration;
 
-use common::messages::{Message, Packet};
 use common::messages::info::InfoResponse;
 use common::messages::list_files::ListFilesResponse;
 use common::messages::ping::PingMessage;
 use common::messages::response::{ConfirmResponse, ErrorResponse};
+use common::messages::{Message, Packet};
+use common::utils::encryption::{decrypt_packet, encrypt_packet, generate_keypair, Encryptor};
 use tokio::fs::{copy, OpenOptions};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::time::sleep;
 
 use crate::files::{list_files, remove};
+use crate::privileges::run_as_admin;
 
 pub async fn run_tcp_client(addr: String) {
     loop {
@@ -23,6 +25,15 @@ pub async fn run_tcp_client(addr: String) {
 
                 let mut buffer = [0; 4096];
                 let mut total_data = Vec::new();
+
+                // Exchange keys with the server
+                let encryption = match exchange_keys(&mut stream).await {
+                    Some(encryptor) => encryptor,
+                    None => {
+                        eprintln!("Failed to exchange keys with server.");
+                        continue; // Retry the connection
+                    }
+                };
 
                 loop {
                     match stream.read(&mut buffer).await {
@@ -36,10 +47,14 @@ pub async fn run_tcp_client(addr: String) {
 
                             // Check if the message is complete
                             if message_complete(&total_data) {
-                                // Once the message is complete, handle the message
-                                if let Err(e) =
-                                    handle_message(&mut stream, &Packet::from_bytes(&total_data))
-                                        .await
+                                // Once the message is complete, decrypt and handle the message
+                                let decrypted_packet = decrypt_packet(&total_data, &encryption);
+                                if let Err(e) = handle_message(
+                                    &mut stream,
+                                    &Packet::from_bytes(&decrypted_packet),
+                                    &encryption,
+                                )
+                                .await
                                 {
                                     eprintln!("Failed to handle message: {}", e);
                                     break; // Exit the loop to auto reconnect
@@ -83,10 +98,28 @@ fn message_complete(data: &[u8]) -> bool {
     data.len() >= 5 + message_size
 }
 
+// Exchange keys and create an encryptor instance
+async fn exchange_keys(stream: &mut TcpStream) -> Option<Encryptor> {
+    // Receive the server's public key
+    let mut server_public_bytes = [0u8; 32];
+    if let Err(_) = stream.read_exact(&mut server_public_bytes).await {
+        return None;
+    }
+    // Send the client's public key to the server
+    let keypair = generate_keypair();
+
+    if let Err(_) = stream.write_all(&keypair.public.to_bytes()).await {
+        return None;
+    }
+    // Create the encryptor instance using the keypair and server's public key
+    Some(Encryptor::new(keypair, server_public_bytes))
+}
+
 // Handle the message received from the server
 pub async fn handle_message(
     stream: &mut TcpStream,
     message: &Packet,
+    encryption: &Encryptor,
 ) -> Result<(), Box<dyn Error>> {
     match message {
         Packet::Ping(msg) => {
@@ -95,7 +128,7 @@ pub async fn handle_message(
                 message: msg.message.clone(),
             };
             let pong_packet = Packet::Ping(pong_message);
-            stream.write_all(&*pong_packet.to_bytes()).await?;
+            send_response(stream, &encryption, pong_packet).await?;
         }
         Packet::ListFiles(msg) => {
             match list_files(&msg.path, msg.only_directories).await {
@@ -103,9 +136,9 @@ pub async fn handle_message(
                     // Send the list of files back to the server
                     let response = ListFilesResponse { files };
                     let response_packet = Packet::ListFilesResponse(response);
-                    stream.write_all(&*response_packet.to_bytes()).await?;
+                    send_response(stream, &encryption, response_packet).await?;
                 }
-                Err(e) => send_error(stream, e.to_string()).await?,
+                Err(e) => send_error(stream, &encryption, e.to_string()).await?,
             }
         }
         Packet::Info(_) => {
@@ -120,20 +153,20 @@ pub async fn handle_message(
                     .unwrap_or("Unknown".to_string()),
             };
             let info_packet = Packet::InfoResponse(info_response);
-            stream.write_all(&*info_packet.to_bytes()).await?;
+            send_response(stream, &encryption, info_packet).await?;
         }
         Packet::CopyFile(msg) => {
             // Copy file
             match copy(&msg.source, &msg.output).await {
-                Ok(_) => send_confirm(stream).await?,
-                Err(e) => send_error(stream, e.to_string()).await?,
+                Ok(_) => send_confirm(stream, &encryption).await?,
+                Err(e) => send_error(stream, &encryption, e.to_string()).await?,
             }
         }
         Packet::RemoveFile(msg) => {
             // Remove file
             match remove(&msg.path).await {
-                Ok(_) => send_confirm(stream).await?,
-                Err(e) => send_error(stream, e.to_string()).await?,
+                Ok(_) => send_confirm(stream, &encryption).await?,
+                Err(e) => send_error(stream, &encryption, e.to_string()).await?,
             }
         }
         Packet::PrepareFile(msg) => {
@@ -146,7 +179,7 @@ pub async fn handle_message(
             {
                 Ok(mut file) => {
                     // Set the file operation to the new file
-                    send_confirm(stream).await?;
+                    send_confirm(stream, &encryption).await?;
                     // Download the remote file
                     println!("Downloading file... ({})", msg.output.to_string_lossy());
                     let mut buf = [0; 65536];
@@ -164,15 +197,15 @@ pub async fn handle_message(
                         }
                     }
                 }
-                Err(e) => send_error(stream, e.to_string()).await?,
+                Err(e) => send_error(stream, &encryption, e.to_string()).await?,
             }
         }
         Packet::Elevate(_) => {
             // Elevate the client
             if let Err(e) = run_as_admin() {
-                send_error(stream, e.to_string()).await?;
+                send_error(stream, &encryption, e.to_string()).await?;
             } else {
-                send_confirm(stream).await?;
+                send_confirm(stream, &encryption).await?;
                 sleep(Duration::from_secs(1)).await;
                 exit(0);
             }
@@ -184,93 +217,37 @@ pub async fn handle_message(
     Ok(())
 }
 
+// Send a response to the server
+pub async fn send_response(
+    stream: &mut TcpStream,
+    encryption: &Encryptor,
+    response: Packet,
+) -> Result<(), Box<dyn Error>> {
+    // Encrypt the response and send it
+    let encrypted_packet = encrypt_packet(&response.to_bytes(), encryption);
+    stream.write_all(&*encrypted_packet).await?;
+    Ok(())
+}
+
 // Send an error message to the server
-pub async fn send_error(stream: &mut TcpStream, error: String) -> Result<(), Box<dyn Error>> {
+pub async fn send_error(
+    stream: &mut TcpStream,
+    encryption: &Encryptor,
+    error: String,
+) -> Result<(), Box<dyn Error>> {
     let error_message = ErrorResponse { error: error };
     let error_packet = Packet::ErrorResponse(error_message);
-    let _ = stream.write_all(&*error_packet.to_bytes()).await?;
+    send_response(stream, encryption, error_packet).await?;
     Ok(())
 }
 
 // Send a confirm response to the server
-pub async fn send_confirm(stream: &mut TcpStream) -> Result<(), Box<dyn Error>> {
+pub async fn send_confirm(
+    stream: &mut TcpStream,
+    encryption: &Encryptor,
+) -> Result<(), Box<dyn Error>> {
     let confirm_message = ConfirmResponse {};
     let confirm_response = Packet::ConfirmResponse(confirm_message);
-    stream.write_all(&*confirm_response.to_bytes()).await?;
-    Ok(())
-}
-
-// Elevate the client if possible
-#[cfg(target_os = "windows")]
-fn run_as_admin() -> Result<(), Box<dyn Error>> {
-    let exe_path = env::current_exe()?;
-
-    // Collect arguments, skipping the program path
-    let args: Vec<String> = env::args().skip(1).collect();
-
-    // Format the command to execute using PowerShell's Start-Process cmdlet
-    let command = format!(
-        "Start-Process \"{}\" -ArgumentList \"{}\" -Verb runAs",
-        exe_path.display(),
-        args.join(" ")
-    );
-    // Use `powershell` to request elevation
-    match Command::new("powershell")
-        .arg("-Command")
-        .arg(command)
-        .spawn()
-    {
-        Ok(mut child) => {
-            // Wait for the child process to finish
-            match child.wait() {
-                Ok(status) => {
-                    if !status.success() {
-                        return Err("Failed to launch the process as administrator.".into());
-                    }
-                }
-                Err(e) => {
-                    return Err(format!("Failed to wait on child process: {}", e).into());
-                }
-            }
-        }
-        Err(e) => {
-            return Err(format!("Failed to execute process with runas: {}", e).into());
-        }
-    }
-
-    Ok(())
-}
-
-#[cfg(target_os = "linux")]
-fn run_as_admin() -> Result<(), Box<dyn Error>> {
-    let exe_path = env::current_exe()?;
-
-    // Collect arguments, skipping the program path
-    let args: Vec<String> = env::args().skip(1).collect();
-
-    // Use `sudo` to request root privileges on Linux
-    match Command::new("sudo")
-        .arg(exe_path)
-        .args(&args)
-        .spawn()
-    {
-        Ok(mut child) => {
-            // Wait for the child process to finish
-            match child.wait() {
-                Ok(status) => {
-                    if !status.success() {
-                        return Err("Failed to launch the process as administrator.".into());
-                    }
-                }
-                Err(e) => {
-                    return Err(format!("Failed to wait on child process: {}", e).into());
-                }
-            }
-        }
-        Err(e) => {
-            return Err(format!("Failed to execute process with runas: {}", e).into());
-        }
-    }
-
+    send_response(stream, encryption, confirm_response).await?;
     Ok(())
 }

@@ -9,13 +9,13 @@ use crate::messages::response::{ConfirmResponse, ErrorResponse};
 
 // The messages module contains all the messages that the server and client can send to each other.
 pub mod copy;
+pub mod elevate;
 pub mod files;
 pub mod info;
 pub mod list_files;
 pub mod ping;
 pub mod remove;
 pub mod response;
-pub mod elevate;
 
 // Available messages for the server and client to communicate with each other.
 pub enum Packet {
@@ -37,8 +37,8 @@ pub trait Message {
     fn to_bytes(&self) -> Vec<u8>;
     // Parses a byte array into a message instance.
     fn from_bytes(data: &[u8]) -> Self
-        where
-            Self: Sized;
+    where
+        Self: Sized;
 }
 
 impl Message for Packet {
@@ -64,7 +64,7 @@ impl Message for Packet {
             Packet::CopyFile(packet) => serialize_packet(8, &packet.to_bytes()),
             Packet::RemoveFile(packet) => serialize_packet(9, &packet.to_bytes()),
             Packet::PrepareFile(packet) => serialize_packet(10, &packet.to_bytes()),
-            Packet::Elevate(packet) => serialize_packet(11, &packet.to_bytes())
+            Packet::Elevate(packet) => serialize_packet(11, &packet.to_bytes()),
         }
     }
 

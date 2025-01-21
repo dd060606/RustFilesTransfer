@@ -3,12 +3,14 @@ use std::sync::Arc;
 use colored::Colorize;
 use common::messages::info::InfoMessage;
 use common::messages::Packet;
+use common::utils::encryption::{generate_keypair, Encryptor};
 use rustyline::ExternalPrinter;
-use tokio::net::TcpListener;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::Mutex;
 
 use crate::connections::{ClientInfo, Connections};
-use crate::ext_success;
+use crate::{ext_error, ext_success};
 
 pub struct Server<P: ExternalPrinter + Send + Sync + 'static> {
     port: String,
@@ -38,12 +40,20 @@ impl<P: ExternalPrinter + Send + Sync + 'static> Server<P> {
         // Counter to assign unique IDs to connections
         let mut next_id: u16 = 1;
         loop {
-            let (socket, addr) = listener.accept().await?;
+            let (mut socket, addr) = listener.accept().await?;
+            // Exchange keys with the client
+            let packet_encryption = match exchange_keys(&mut socket).await {
+                Some(encryptor) => encryptor,
+                None => {
+                    ext_error!(printer, "Failed to exchange keys with client {}", addr);
+                    continue;
+                }
+            };
             ext_success!(printer, "New connection: {} ({})", addr, next_id);
 
             // Add the connection to the list
             let mut connections = self.connections.lock().await;
-            connections.add_connection(next_id, socket);
+            connections.add_connection(next_id, socket, packet_encryption);
             // Add the connection info
             let info_msg = InfoMessage {};
             let info_packet = Packet::Info(info_msg);
@@ -86,4 +96,20 @@ async fn search_port(port: &mut String) -> TcpListener {
             }
         }
     }
+}
+
+// Exchange keys and create an encryptor instance
+async fn exchange_keys(stream: &mut TcpStream) -> Option<Encryptor> {
+    // Generate a keypair and send the public key to the client
+    let keypair = generate_keypair();
+    if let Err(_) = stream.write_all(&keypair.public.to_bytes()).await {
+        return None;
+    }
+    // Read the client's public key
+    let mut client_public_bytes = [0u8; 32];
+    if let Err(_) = stream.read_exact(&mut client_public_bytes).await {
+        return None;
+    }
+    // Create the encryptor instance using the keypair and client's public key
+    Some(Encryptor::new(keypair, client_public_bytes))
 }

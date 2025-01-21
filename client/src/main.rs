@@ -6,6 +6,7 @@ use crate::client::run_tcp_client;
 
 mod client;
 mod files;
+mod privileges;
 
 #[tokio::main]
 async fn main() {

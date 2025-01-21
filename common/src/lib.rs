@@ -4,11 +4,9 @@ pub mod utils;
 
 #[cfg(test)]
 mod tests {
-    use x25519_dalek::PublicKey;
-
-    use crate::messages::{Message, Packet};
     use crate::messages::ping::PingMessage;
-    use crate::utils::encryption::{Encryptor, generate_keypair};
+    use crate::messages::{Message, Packet};
+    use crate::utils::encryption::{decrypt_packet, encrypt_packet, generate_keypair, Encryptor};
 
     #[test]
     fn test_packet() {
@@ -36,25 +34,31 @@ mod tests {
         let client_pub_bytes = client_keypair.public.to_bytes();
 
         // Server side
-        let server_shared_secret = server_keypair.private.diffie_hellman(&PublicKey::from(client_pub_bytes));
-        let server_encryptor = Encryptor::new(server_shared_secret);
-        let encrypted_data = server_encryptor.encrypt(b"Hello, world!");
+        let server_encryptor = Encryptor::new(server_keypair, client_pub_bytes);
 
+        let packet_bytes = Packet::Ping(PingMessage {
+            message: "Hello, world!".to_string(),
+        })
+        .to_bytes();
+
+        let encrypted_data = encrypt_packet(&packet_bytes, &server_encryptor);
         // Client side
-        let client_shared_secret = client_keypair.private.diffie_hellman(&PublicKey::from(server_pub_bytes));
-        let client_encryptor = Encryptor::new(client_shared_secret);
+        let client_encryptor = Encryptor::new(client_keypair, server_pub_bytes);
 
         let mut encrypted_response = vec![];
-        if let Some(decrypted_data) = client_encryptor.decrypt(&encrypted_data) {
-            println!("Received from server: {:?}", String::from_utf8_lossy(&decrypted_data));
-            assert_eq!(decrypted_data, b"Hello, world!");
+        let decrypted_packet_bytes = decrypt_packet(&encrypted_data, &client_encryptor);
+        if let Packet::Ping(msg) = Packet::from_bytes(&decrypted_packet_bytes) {
+            println!("Received from server: {}", msg.message);
+            assert_eq!(msg.message, "Hello, world!");
             // Echo back the received message
-            encrypted_response = client_encryptor.encrypt(&decrypted_data);
+            encrypted_response = encrypt_packet(&Packet::Ping(msg).to_bytes(), &client_encryptor);
         }
+
         //Server side
-        if let Some(decrypted_response) = server_encryptor.decrypt(&encrypted_response) {
-            println!("Received from client: {:?}", String::from_utf8_lossy(&decrypted_response));
-            assert_eq!(decrypted_response, b"Hello, world!");
+        let decrypted_response_bytes = decrypt_packet(&encrypted_response, &server_encryptor);
+        if let Packet::Ping(msg) = Packet::from_bytes(&decrypted_response_bytes) {
+            println!("Received from client: {}", msg.message);
+            assert_eq!(msg.message, "Hello, world!");
         }
     }
 }

@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use common::messages::{Message, Packet};
+use common::utils::encryption::{decrypt_packet, encrypt_packet, Encryptor};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
@@ -13,6 +14,8 @@ pub struct ClientInfo {
 pub struct Connections {
     //Map of connections (ID, TcpStream)
     pub clients: HashMap<u16, TcpStream>,
+    //Map of encryption keys (ID, Encryptor)
+    encryption: HashMap<u16, Encryptor>,
     pub clients_info: HashMap<u16, ClientInfo>,
     //ID of the current connection
     pub current_client: u16,
@@ -21,15 +24,18 @@ pub struct Connections {
 impl Connections {
     pub fn new() -> Connections {
         let clients = HashMap::new();
+        let encryption = HashMap::new();
         let clients_info = HashMap::new();
         Connections {
             clients,
+            encryption,
             clients_info,
             current_client: 1,
         }
     }
-    pub fn add_connection(&mut self, id: u16, stream: TcpStream) {
+    pub fn add_connection(&mut self, id: u16, stream: TcpStream, encryptor: Encryptor) {
         self.clients.insert(id, stream);
+        self.encryption.insert(id, encryptor);
     }
     pub fn add_info(&mut self, id: u16, info: ClientInfo) {
         self.clients_info.insert(id, info);
@@ -41,6 +47,7 @@ impl Connections {
     pub fn remove_connection(&mut self, id: u16) {
         self.clients.remove(&id);
         self.clients_info.remove(&id);
+        self.encryption.remove(&id);
     }
 
     //Check if the connection exists
@@ -63,52 +70,66 @@ impl Connections {
 
     //Send a message to the selected client
     pub async fn send_message(&mut self, message: &Packet) -> Result<Packet, String> {
-        if let Some(stream) = self.get_connection(self.current_client) {
-            // Send the message
-            match stream.write_all(&*message.to_bytes()).await {
-                Ok(_) => {}
-                Err(e) => {
-                    self.remove_connection(self.current_client);
-                    return Err(e.to_string());
-                }
+        let client_id = self.current_client;
+
+        // Get both connection and encryptor with a single borrow
+        let (stream, encryptor) = {
+            if !self.clients.contains_key(&client_id) {
+                return Err(format!(
+                    "Client {} not found, please change current client using 'select '",
+                    client_id
+                ));
+            }
+            if !self.encryption.contains_key(&client_id) {
+                return Err("Encryptor not found!".to_string());
             }
 
-            // Read the response
-            let mut buffer = [0; 1024];
-            let mut total_data = Vec::new();
+            // Now we know both exist, we can get references
+            let stream = self.clients.get_mut(&client_id).unwrap();
+            let encryptor = self.encryption.get(&client_id).unwrap();
+            (stream, encryptor)
+        };
 
-            loop {
-                match stream.read(&mut buffer).await {
-                    Ok(size) => {
-                        if size == 0 {
-                            // If total_data is empty, the connection was closed unexpectedly
-                            if total_data.is_empty() {
-                                self.remove_connection(self.current_client);
-                                return Err(String::from("Connection closed unexpectedly!"));
-                            } else {
-                                // If there is already data, consider it a normal closure
-                                break;
-                            }
+        // Encrypt the packet
+        let encrypted_packet = encrypt_packet(&message.to_bytes(), encryptor);
+        // Send the message
+        if let Err(e) = stream.write_all(&encrypted_packet).await {
+            self.remove_connection(client_id);
+            return Err(e.to_string());
+        }
+
+        // Read the response
+        let mut buffer = [0; 1024];
+        let mut total_data = Vec::new();
+
+        loop {
+            match stream.read(&mut buffer).await {
+                Ok(size) => {
+                    if size == 0 {
+                        if total_data.is_empty() {
+                            self.remove_connection(client_id);
+                            return Err("Connection closed unexpectedly!".to_string());
                         } else {
-                            total_data.extend_from_slice(&buffer[..size]);
-                            if size < 1024 {
-                                break;
-                            }
+                            break;
+                        }
+                    } else {
+                        total_data.extend_from_slice(&buffer[..size]);
+                        if size < 1024 {
+                            break;
                         }
                     }
-                    Err(e) => {
-                        return Err(format!("Failed to read from client: {}", e));
-                    }
+                }
+                Err(e) => {
+                    self.remove_connection(client_id);
+                    return Err(format!("Failed to read from client: {}", e));
                 }
             }
-            // Convert the total_data into a Packet
-            Ok(Packet::from_bytes(&total_data))
-        } else {
-            Err(format!(
-                "Client {} not found, please change current client using 'select <id>'",
-                self.current_client
-            ))
         }
+
+        // Decrypt the response
+        let decrypted_response = decrypt_packet(&total_data, encryptor);
+        // Convert the decrypted byte array into a Packet
+        Ok(Packet::from_bytes(&decrypted_response))
     }
 
     // Send a file chunk to the selected client without acknowledgment
