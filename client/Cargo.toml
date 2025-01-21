@@ -6,3 +6,8 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1", features = ["full"] }
 common = { path = "../common" }
+
+[profile.release]
+opt-level = "z"
+codegen-units = 1
+lto = "thin"
