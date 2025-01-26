@@ -1,13 +1,16 @@
-use super::{Command, CommandRegistry};
-use crate::utils::files::{extract_paths, print_progress};
-use crate::{error, success};
+use std::path::PathBuf;
+
 use async_trait::async_trait;
 use colored::Colorize;
 use common::messages::files::PrepareFileMessage;
 use common::messages::Packet;
-use std::path::PathBuf;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
+
+use crate::{error, success};
+use crate::utils::files::{extract_paths, print_progress};
+
+use super::{Command, CommandRegistry};
 
 pub struct UploadCommand;
 
@@ -39,7 +42,7 @@ impl Command for UploadCommand {
         // Extract the source and destination paths
         let joined_args = args.join(" ");
         let paths = extract_paths(&joined_args);
-        let source = paths[0];
+        let source = if !paths.is_empty() { paths[0] } else { &*args[0] };
         let destination = if paths.len() > 1 { paths[1] } else { source };
 
         // Open the local file
